@@ -6,32 +6,56 @@ import 'package:jobapp/presentation/bloc/job_bloc.dart';
 import 'package:jobapp/presentation/screen/job_list_screen.dart';
 import 'package:jobapp/presentation/screen/saved_job_screen.dart';
 import 'package:jobapp/presentation/screen/splas_screen.dart';
-
+import 'package:jobapp/presentation/theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final ValueNotifier<ThemeMode> _themeModeNotifier =
+      ValueNotifier(ThemeMode.light);
+
+  void toggleTheme() {
+    _themeModeNotifier.value = _themeModeNotifier.value == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
+  }
+
+  @override
+  void dispose() {
+    _themeModeNotifier.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => JobCubit(JobRepository(ApiService())),
-      child: MaterialApp(debugShowCheckedModeBanner: false,
-        title: 'Job App',
-        theme: ThemeData(
-          primarySwatch: Colors.deepPurple,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        initialRoute: '/splash',
-        routes: {
-          '/splash': (context) => const SplashScreen(),
-          // '/': (context) => const JobListScreen(),
-          '/saved': (context) => const SavedJobsScreen(),
-        },
-      ),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: _themeModeNotifier,
+      builder: (context, themeMode, child) {
+        return BlocProvider(
+          create: (context) => JobCubit(JobRepository(ApiService())),
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Job App',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            initialRoute: '/splash',
+            routes: {
+              '/splash': (context) => SplashScreen(onThemeToggle: toggleTheme),
+              '/saved': (context) => const SavedJobsScreen(),
+            },
+          ),
+        );
+      },
     );
   }
 }

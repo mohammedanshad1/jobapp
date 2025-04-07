@@ -22,6 +22,9 @@ class _JobListScreenState extends State<JobListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -29,14 +32,17 @@ class _JobListScreenState extends State<JobListScreen> {
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.appBarTheme.foregroundColor ?? Colors.white,
           ),
         ),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.primaryColor,
         elevation: 4,
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark, color: Colors.white),
+            icon: Icon(
+              Icons.bookmark,
+              color: theme.appBarTheme.foregroundColor ?? Colors.white,
+            ),
             onPressed: () => Navigator.pushNamed(context, '/saved'),
           ),
         ],
@@ -46,7 +52,9 @@ class _JobListScreenState extends State<JobListScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.deepPurple.shade50, Colors.white],
+            colors: isDarkMode
+                ? [Colors.teal.shade800, Colors.grey.shade900]
+                : [Colors.blue.shade50, theme.scaffoldBackgroundColor],
           ),
         ),
         child: BlocConsumer<JobCubit, JobState>(
@@ -61,11 +69,11 @@ class _JobListScreenState extends State<JobListScreen> {
             }
           },
           builder: (context, state) {
-            print('Current state: $state');
             if (state is JobLoading) {
-              return const Center(child: CircularProgressIndicator(color: Colors.deepPurple));
+              return Center(
+                child: CircularProgressIndicator(color: theme.primaryColor),
+              );
             } else if (state is JobLoaded) {
-              print('Rendering ${state.jobs.length} jobs');
               return ListView.builder(
                 padding: const EdgeInsets.all(16.0),
                 itemCount: state.jobs.length,
@@ -81,19 +89,23 @@ class _JobListScreenState extends State<JobListScreen> {
                   children: [
                     Text(
                       state.message,
-                      style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey.shade700),
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        color: theme.textTheme.bodyMedium?.color ?? Colors.grey,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => context.read<JobCubit>().fetchJobs(1),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
+                      style: theme.elevatedButtonTheme.style,
                       child: Text(
                         'Retry',
-                        style: GoogleFonts.poppins(fontSize: 16, color: Colors.white),
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: theme.elevatedButtonTheme.style?.foregroundColor
+                                  ?.resolve({}) ??
+                              Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -103,7 +115,10 @@ class _JobListScreenState extends State<JobListScreen> {
             return Center(
               child: Text(
                 'Press refresh to load jobs',
-                style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey.shade600),
+                style: GoogleFonts.roboto(
+                  fontSize: 18,
+                  color: theme.textTheme.bodyMedium?.color ?? Colors.grey,
+                ),
               ),
             );
           },
@@ -111,8 +126,12 @@ class _JobListScreenState extends State<JobListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.read<JobCubit>().fetchJobs(1),
-        backgroundColor: Colors.deepPurple,
-        child: const Icon(Icons.refresh, color: Colors.white),
+        backgroundColor: theme.primaryColor,
+        child: Icon(
+          Icons.refresh,
+          color: theme.elevatedButtonTheme.style?.foregroundColor?.resolve({}) ??
+              Colors.white,
+        ),
         elevation: 6,
       ),
     );

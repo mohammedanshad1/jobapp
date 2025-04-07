@@ -9,6 +9,9 @@ class SavedJobsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -16,10 +19,11 @@ class SavedJobsScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: theme.appBarTheme.foregroundColor ?? Colors.white,
           ),
         ),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor:
+            theme.appBarTheme.backgroundColor ?? theme.primaryColor,
         elevation: 4,
       ),
       body: Container(
@@ -27,7 +31,9 @@ class SavedJobsScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.deepPurple.shade50, Colors.white],
+            colors: isDarkMode
+                ? [Colors.teal.shade800, Colors.grey.shade900]
+                : [Colors.blue.shade50, theme.scaffoldBackgroundColor],
           ),
         ),
         child: BlocBuilder<JobCubit, JobState>(
@@ -37,7 +43,8 @@ class SavedJobsScreen extends StatelessWidget {
               return Center(
                 child: Text(
                   'No saved jobs yet',
-                  style: GoogleFonts.roboto(fontSize: 18, color: Colors.grey.shade600),
+                  style: GoogleFonts.roboto(
+                      fontSize: 18, color: theme.textTheme.bodyMedium!.color),
                 ),
               );
             }

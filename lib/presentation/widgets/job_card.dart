@@ -11,6 +11,9 @@ class JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Card(
       elevation: 8,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -21,7 +24,9 @@ class JobCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade100],
+            colors: isDarkMode
+                ? [Colors.grey.shade800, Colors.grey.shade900]
+                : [Colors.white, Colors.grey.shade100],
           ),
           boxShadow: [
             BoxShadow(
@@ -37,14 +42,16 @@ class JobCard extends StatelessWidget {
           leading: CircleAvatar(
             radius: 30,
             backgroundImage: NetworkImage(job.avatar),
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: isDarkMode
+                ? Colors.grey.shade700
+                : Colors.grey.shade200,
           ),
           title: Text(
             job.title,
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.deepPurple.shade900,
+              color: isDarkMode ? Colors.teal.shade200 : Colors.blue.shade900,
             ),
           ),
           subtitle: Column(
@@ -55,7 +62,7 @@ class JobCard extends StatelessWidget {
                 job.company,
                 style: GoogleFonts.roboto(
                   fontSize: 14,
-                  color: Colors.grey.shade700,
+                  color: theme.textTheme.bodyMedium!.color,
                 ),
               ),
               const SizedBox(height: 4),
@@ -63,7 +70,8 @@ class JobCard extends StatelessWidget {
                 job.email,
                 style: GoogleFonts.roboto(
                   fontSize: 12,
-                  color: Colors.grey.shade500,
+                  color:
+                      isDarkMode ? Colors.grey.shade400 : Colors.grey.shade500,
                 ),
               ),
             ],
@@ -73,25 +81,29 @@ class JobCard extends StatelessWidget {
               context.read<JobCubit>().savedJobs.contains(job)
                   ? Icons.bookmark
                   : Icons.bookmark_border,
-              color: Colors.deepPurple,
+              color: theme.primaryColor,
             ),
             onPressed: () => context.read<JobCubit>().toggleSavedJob(job),
           ),
           onTap: () => showDialog(
             context: context,
             builder: (_) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               title: Text(
                 job.title,
-                style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                style: GoogleFonts.poppins(
+                    fontSize: 20, fontWeight: FontWeight.bold),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Company: ${job.company}', style: GoogleFonts.roboto(fontSize: 16)),
+                  Text('Company: ${job.company}',
+                      style: GoogleFonts.roboto(fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text('Email: ${job.email}', style: GoogleFonts.roboto(fontSize: 14)),
+                  Text('Email: ${job.email}',
+                      style: GoogleFonts.roboto(fontSize: 14)),
                 ],
               ),
               actions: [
@@ -99,7 +111,8 @@ class JobCard extends StatelessWidget {
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     'Close',
-                    style: GoogleFonts.poppins(color: Colors.deepPurple),
+                    style:
+                        GoogleFonts.poppins(color: theme.textTheme.bodyMedium!.color),
                   ),
                 ),
               ],

@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:jobapp/presentation/screen/job_list_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final VoidCallback onThemeToggle;
+
+  const SplashScreen({super.key, required this.onThemeToggle});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -33,7 +35,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // Navigate to JobListScreen after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const JobListScreen()),
@@ -49,16 +50,17 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.deepPurple.shade900,
-              Colors.deepPurple.shade300,
-            ],
+            colors: isDarkMode
+                ? [Colors.teal.shade900, Colors.teal.shade300]
+                : [Colors.blue.shade900, Colors.blue.shade300],
           ),
         ),
         child: Center(
@@ -67,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               ScaleTransition(
                 scale: _scaleAnimation,
-                child: _buildLogo(),
+                child: _buildLogo(isDarkMode),
               ),
               const SizedBox(height: 20),
               Text(
@@ -110,6 +112,16 @@ class _SplashScreenState extends State<SplashScreen>
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+              IconButton(
+                icon: Icon(
+                  isDarkMode ? Icons.wb_sunny : Icons.nightlight_round,
+                  color: Colors.white,
+                  size: 30,
+                ),
+                onPressed: widget.onThemeToggle,
+                tooltip: 'Toggle Theme',
+              ),
             ],
           ),
         ),
@@ -117,13 +129,12 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  // Custom logo widget (replace with your asset if available)
-  Widget _buildLogo() {
+  Widget _buildLogo(bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withOpacity(isDarkMode ? 0.1 : 0.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
@@ -132,15 +143,14 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ],
       ),
-      child: const Icon(
-        Icons.work_outline, // Replace with a custom logo asset if you have one
+      child: Icon(
+        Icons.work_outline,
         size: 80,
-        color: Colors.white,
+        color: isDarkMode ? Colors.teal.shade200 : Colors.white,
       ),
     );
   }
 
-  // Animated loading dots
   Widget _buildDotAnimation({required int delay}) {
     return AnimatedBuilder(
       animation: _controller,
