@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:jobapp/presentation/bloc/job_bloc.dart';
 import '../../domain/entities/job.dart';
-
 class JobCard extends StatelessWidget {
   final Job job;
 

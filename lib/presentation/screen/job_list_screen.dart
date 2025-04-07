@@ -14,7 +14,6 @@ class _JobListScreenState extends State<JobListScreen> {
   @override
   void initState() {
     super.initState();
-    // Load initial data when screen first loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<JobCubit>().fetchJobs(1);
     });
@@ -41,9 +40,11 @@ class _JobListScreenState extends State<JobListScreen> {
           }
         },
         builder: (context, state) {
-          if (state is JobLoading && !(state is JobLoaded)) {
+          print('Current state: $state');
+          if (state is JobLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is JobLoaded) {
+            print('Rendering ${state.jobs.length} jobs');
             return ListView.builder(
               itemCount: state.jobs.length,
               itemBuilder: (context, index) {

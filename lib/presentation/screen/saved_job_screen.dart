@@ -12,7 +12,7 @@ class SavedJobsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Saved Jobs')),
       body: BlocBuilder<JobCubit, JobState>(
         builder: (context, state) {
-          final savedJobs = (state is JobSavedUpdated) ? state.savedJobs : context.read<JobCubit>().savedJobs;
+          final savedJobs = state is JobLoaded ? state.savedJobs : [];
           if (savedJobs.isEmpty) {
             return const Center(child: Text('No saved jobs yet'));
           }

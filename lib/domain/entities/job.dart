@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class Job extends Equatable {
-  final int? id; // Nullable
+  final int? id; // Already nullable
   final String title;
   final String company;
   final String email;
@@ -16,6 +16,5 @@ class Job extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [id, title, company, email, avatar]; // Note Object? for nullable id
+  List<Object?> get props => [id, title, company, email, avatar];
 }

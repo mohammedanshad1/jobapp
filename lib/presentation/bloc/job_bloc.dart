@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/repositories/job_repository.dart';
 import '../../domain/entities/job.dart';
 
-
 class JobCubit extends Cubit<JobState> {
   final JobRepository repository;
   List<Job> savedJobs = [];
@@ -18,33 +17,39 @@ class JobCubit extends Cubit<JobState> {
     _loadSavedJobs();
   }
 
-  Future<void> _loadSavedJobs() async {
-  final savedIds = _prefs.getStringList('saved_job_ids') ?? [];
-  final allJobs = (state is JobLoaded) ? (state as JobLoaded).jobs : [];
-  savedJobs = List<Job>.from(
-    allJobs.where((job) => job.id != null && savedIds.contains(job.id.toString())),
-  );
-  emit(JobSavedUpdated(List.from(savedJobs)));
-}
-  Future<void> fetchJobs(int page) async {
-  try {
-    emit(JobLoading());
-    final jobModels = await repository.getJobs(page);
-    final jobs = jobModels.map((model) => Job(
-      id: model.id,
-      title: '${model.firstName} ${model.lastName} Position',
-      company: model.email.split('@')[1].split('.')[0],
-      email: model.email,
-      avatar: model.avatar,
-    )).toList();
-    emit(JobLoaded(jobs));
-    _loadSavedJobs();
-  } catch (e, stackTrace) {
-    print('Error in fetchJobs: $e');
-    print('Stack trace: $stackTrace');
-    emit(JobError('Failed to load jobs: ${e.toString()}'));
+  Future<void> _loadSavedJobs({List<Job>? allJobs}) async {
+    final savedIds = _prefs.getStringList('saved_job_ids') ?? [];
+    final currentJobs = allJobs ?? (state is JobLoaded ? (state as JobLoaded).jobs : []);
+    savedJobs = List<Job>.from(
+      currentJobs.where((job) => job.id != null && savedIds.contains(job.id.toString())),
+    );
+    if (state is JobLoaded) {
+      emit(JobLoaded((state as JobLoaded).jobs, savedJobs: savedJobs));
+    }
   }
-}
+
+  Future<void> fetchJobs(int page) async {
+    try {
+      emit(JobLoading());
+      print('Emitted JobLoading');
+      final jobModels = await repository.getJobs(page);
+      final jobs = jobModels.map((model) => Job(
+        id: model.id,
+        title: '${model.firstName ?? 'Unknown'} ${model.lastName ?? 'User'} Position',
+        company: model.email != null ? model.email!.split('@')[1].split('.')[0] : 'Unknown',
+        email: model.email ?? 'No email',
+        avatar: model.avatar ?? 'https://via.placeholder.com/150',
+      )).toList();
+      print('Jobs to emit: ${jobs.length} items');
+      emit(JobLoaded(jobs, savedJobs: savedJobs));
+      print('Emitted JobLoaded with ${jobs.length} jobs');
+      await _loadSavedJobs(allJobs: jobs); // Update saved jobs after loading
+    } catch (e, stackTrace) {
+      print('Error in fetchJobs: $e');
+      print('Stack trace: $stackTrace');
+      emit(JobError('Failed to load jobs: ${e.toString()}'));
+    }
+  }
 
   void toggleSavedJob(Job job) async {
     if (savedJobs.contains(job)) {
@@ -54,7 +59,9 @@ class JobCubit extends Cubit<JobState> {
     }
     final savedIds = savedJobs.map((job) => job.id.toString()).toList();
     await _prefs.setStringList('saved_job_ids', savedIds);
-    emit(JobSavedUpdated(List.from(savedJobs)));
+    if (state is JobLoaded) {
+      emit(JobLoaded((state as JobLoaded).jobs, savedJobs: savedJobs));
+    }
   }
 }
 
@@ -66,15 +73,12 @@ class JobLoading extends JobState {}
 
 class JobLoaded extends JobState {
   final List<Job> jobs;
-  JobLoaded(this.jobs);
+  final List<Job> savedJobs;
+
+  JobLoaded(this.jobs, {this.savedJobs = const []});
 }
 
 class JobError extends JobState {
   final String message;
   JobError(this.message);
-}
-
-class JobSavedUpdated extends JobState {
-  final List<Job> savedJobs;
-  JobSavedUpdated(this.savedJobs);
 }
